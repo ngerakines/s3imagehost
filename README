@@ -1,0 +1,79 @@
+README
+
+This project, s3images, is an open source erlang image store that uses
+the Amazon S3 service for its backend. It aims to provide an image storage
+service that acts in a way similar to MogileFS. This project was inspired
+by Daanga's MogileFS.
+
+There are a few assumptions made to make things simple.
+1. You have an active amazon s3 account.
+2. All uploaded files are publicly accessible
+3. The bucket you are using is corresponds to a domain that can access the
+   via a CNAME record or the like. In other words, if you have the domain
+   example.com then you've already setup the media.example.com bucket and
+   set the media CNAME record to point to media.example.com.s3.amazonaws.com
+
+After a file has been uploaded there are a few rules used to determine if
+the file should be stored on s3 and on the local mnesia store.
+1. Is the file under 5 megs?
+2. Is the file an imaage (png, jpeg or gif)?
+3. Is the image less than 4096 pixels in height or width?
+
+LICENSE
+
+Copyright (c) 2008 Nick Gerakines <nick@gerakines.net>
+
+This project has been open sourced under the MIT license. Please see the
+LICENSE file for more information.
+
+CONFIGURATION
+
+The following configuration variables must be set in the ebin/s3images.app:
+1. ip -- The IP address that yaws attempts to bind to.
+2. port -- The port that yaws will attempt to bind to on the above IP.
+3. domain -- The hostname that yaws will recognize requests on.
+4. s3bucket -- The name of the Amazon S3 bucket used throughout the app.
+5. s3key -- The Amazon S3 key used to access the above bucket.
+6. s3secret -- The secret token used in conjunction with the key.
+
+BUILDING
+
+  $ make
+
+START-UP
+
+1. Update the ebin/s3images.app file and set the domain, amazon s3 access
+   information and s3 bucket.
+2. Build the project (`make`)
+3. Start the erlang node (`./start.sh`)
+4. Start the application and its dependancies. 
+   `1> [application:start(X) || X <- [inets, yaws, crypto, mnesia, s3images]].`
+
+ELIB
+
+The elib directory contains the erltl and s3 libraries used by this
+application. Both of those libraries have been explicitly separated because
+they have been released under a separate license.
+
+CAVEATS / NOTES / KNOWN ISSUES
+
+ * Files are temporarily stored in the /tmp dir.
+ * Uploaded files are renamed. The names are long and should probably be
+   shortened.
+ * The system has to wait for files to be uploaded before it can reject it
+   for being too big.
+
+CHANGES
+
+2008-07-09 ngerakines
+ - Initial development
+ - Package and release of 0.1
+
+TODO / ROADMAP
+
+ * Set the /i/ handler to transparently serve content without issuing a
+   redirect. 
+ * Release a Perlbal configuration example until it can (^^).
+ * Add thumbnailing functionality.
+ * Improve the image record.
+ * Add hooks to an auth handler to prevent anonymous uploads (s3 ain't cheap!).

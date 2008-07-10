@@ -1,0 +1,49 @@
+Nothing to see here ... Move along now.
+<%@ default(Data) %>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="en">
+<head>
+    <title>Page Layouts - Single column, centre aligned, set width</title>
+    <style type="text/css" media="screen">
+	<!--
+	body { padding: 0; margin: 0; background-color: #ffffff; color: #000;
+	    text-align: center; }
+    #contents { margin-top: 10px; margin-bottom: 10px; margin-right:auto;
+        margin-left:auto; width: 600px; padding: 10px; background-color: #FFF;
+        color: #000; text-align: left; }
+    h1 { color: #333; background-color: transparent;
+        font-family: Arial, Helvetica, sans-serif; font-size: 20px; }
+    p { color: #333; background-color: transparent;
+        font-family: Arial, Helvetica, sans-serif; font-size: 0.8em; }
+    .code { color: #339;background-color: transparent;
+        font-family: times, serif; font-size: 0.9em; padding-left: 40px; }
+    -->
+    </style>
+</head>
+<body>
+    <div id="contents">
+        <% Data %>	
+    </div>
+    <p>Check out <a href="http://github.com/ngerakines/s3imagehost/">the source</a>.</p>
+</body>
+</html>
+<%@ index(_) %>
+<h1>Welcome</h1>
+<p>This is the s3images project.</p>
+<%@ upload(ok) %>
+<h1>Upload a file</h1>
+<p>Use this form to upload a file.</p>
+<p>&nbsp;</p>
+<form enctype="multipart/form-data" method="post" action="/upload">
+    
+    <input type="file" width="50" name="file" />
+    <input type="submit" value="Upload" />
+</form>
+
+<%@ upload({ok, S3Filename})%>
+<h1>Success!</h1>
+<p>Image <a href="/i/<% S3Filename %>"><% S3Filename %></a> has been uploaded.</p>
+
+<%@ upload(error) %>
+<h1>Warning!</h1>
+<p>There was an error uploading the image.</p>
