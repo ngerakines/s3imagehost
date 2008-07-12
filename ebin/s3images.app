@@ -17,9 +17,11 @@
       {ip, {0, 0, 0, 0}},
       {port, 5056},
       {domain, "localhost"},
-      {s3bucket, "media.example.com"},
-      {s3key, "keyabc123"},
-      {s3secret, "secretabc123"}
+      {s3bucket, "media.s3images.com"},
+      {s3key, ""},
+      {s3secret, ""},
+      {reproxy, true},
+      {create_sq, true}
     ]},
     {start_phases, [
       {mnesia, []},

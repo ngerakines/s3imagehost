@@ -36,7 +36,7 @@ delete_bucket (Name) -> gen_server:call(?MODULE, {delete, Name} ).
 list_buckets ()      -> gen_server:call(?MODULE, {listbuckets}).
 
 write_object (Bucket, Key, Data, ContentType) -> 
-    gen_server:call(?MODULE, {put, Bucket, Key, Data, ContentType}).
+    gen_server:call(?MODULE, {put, Bucket, Key, Data, ContentType}, 60000).
 read_object (Bucket, Key) -> 
     gen_server:call(?MODULE, {get, Bucket, Key}).
 delete_object (Bucket, Key) -> 

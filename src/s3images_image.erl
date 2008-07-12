@@ -29,12 +29,21 @@
 
 get_query(name, [Args]) ->
     qlc:q([E || E <- mnesia:table(image), E#image.name == Args]);
+get_query(object, [Args]) ->
+    qlc:q([E || E <- mnesia:table(image), E#image.object == Args]);
 get_query(_, _) ->
     qlc:q([E || E <- mnesia:table(image)]).
 
 find(Type, Args) ->
     F = fun() -> qlc:e(get_query(Type, Args)) end,
     mnesia:activity(transaction, F).
+
+create(X, Y, Z) when is_binary(X) == false ->
+    create(list_to_binary(X), Y, Z);
+create(X, Y, Z) when is_binary(Y) == false ->
+    create(X, list_to_binary(Y), Z);
+create(X, Y, Z) when is_binary(Z) == false ->
+    create(X, Y, list_to_binary(Z));
 
 create(Name, Object, Owner) ->
     F = fun() ->

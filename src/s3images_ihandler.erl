@@ -36,7 +36,12 @@ handle_request('GET', "/i/" ++ File, _Arg) ->
         [Record] ->
             %% fetch 'domain' variable
             Url = lists:concat(["http://", s3images:env_key(s3bucket), "/", binary_to_list(Record#image.name)]),
-            {redirect, Url};
+            case s3images:env_key(reproxy) of
+                true -> 
+                    [{status, 200}, {allheaders, [{header, ["X-REPROXY-URL: ", Url]}]}, {html, Url}];
+                _ ->
+                    {redirect, Url}
+            end;
         _ -> make_response(404, "<h1>File not found.</h1>")
     end;
 

@@ -19,6 +19,21 @@ the file should be stored on s3 and on the local mnesia store.
 2. Is the file an imaage (png, jpeg or gif)?
 3. Is the image less than 4096 pixels in height or width?
 
+NOTE: This application requires the ImageMagick `convert` executable to
+create thumbnails.
+
+API
+
+* GET [HOST]/upload -- Returns HTML that is used to upload an image
+* POST [HOST]/upload -- Processes multi-part form data to upload image
+  content to a temp directory, assert that it is valid, send it to the
+  provided Amazon S3 bucket and create a mnesia record describing the image.
+* GET [HOST]/a/object:[NAME] -- Returns a list of image records that point
+  to the object [NAME].
+* GET [HOST]/i/[NAME] -- Requests image keyed [NAME]. If the image exists
+  either the user will be redirected to it or a perlbal-friendly header will
+  be passed back indicating an internal redirect needs to be processed.
+
 LICENSE
 
 Copyright (c) 2008 Nick Gerakines <nick@gerakines.net>
@@ -35,6 +50,8 @@ The following configuration variables must be set in the ebin/s3images.app:
 4. s3bucket -- The name of the Amazon S3 bucket used throughout the app.
 5. s3key -- The Amazon S3 key used to access the above bucket.
 6. s3secret -- The secret token used in conjunction with the key.
+7. reproxy -- Set to 'true' to send the 'X-REPROXY-URL' header.
+8. create_sq -- Set to 'true' to create/upload 100x100 thumbnails
 
 BUILDING
 
@@ -55,6 +72,8 @@ The elib directory contains the erltl and s3 libraries used by this
 application. Both of those libraries have been explicitly separated because
 they have been released under a separate license.
 
+The rfc4627 library is also used to encode image records into JSON.
+
 CAVEATS / NOTES / KNOWN ISSUES
 
  * Files are temporarily stored in the /tmp dir.
@@ -65,6 +84,15 @@ CAVEATS / NOTES / KNOWN ISSUES
 
 CHANGES
 
+2008-07-12 ngerakines
+ - Added a config option to direct the app to set the 'X-REPROXY-URL' header
+   instead of sending a redirect.
+ - Added a config option to use the ImageMagick `convert` utility to create
+   and upload 100x100 square thumbnail images.
+ - Added the /a/object:XYZ123 URI to return a list of images where XYZ123 is
+   an object id.
+ - Added the rfc4627 library to support the above API method.
+
 2008-07-09 ngerakines
  - Initial development
  - Package and release of 0.1
@@ -73,7 +101,5 @@ TODO / ROADMAP
 
  * Set the /i/ handler to transparently serve content without issuing a
    redirect. 
- * Release a Perlbal configuration example until it can (^^).
- * Add thumbnailing functionality.
  * Improve the image record.
  * Add hooks to an auth handler to prevent anonymous uploads (s3 ain't cheap!).

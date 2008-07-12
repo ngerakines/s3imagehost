@@ -35,7 +35,8 @@ Nothing to see here ... Move along now.
 <p>Use this form to upload a file.</p>
 <p>&nbsp;</p>
 <form enctype="multipart/form-data" method="post" action="/upload">
-    
+    <input type="hidden" name="owner" value="ngerakines" />
+    <input type="hidden" name="object" value="blog_post_123456" />
     <input type="file" width="50" name="file" />
     <input type="submit" value="Upload" />
 </form>

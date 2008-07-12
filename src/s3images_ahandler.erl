@@ -28,7 +28,7 @@
 -include_lib("yaws/include/yaws_api.hrl").
 -include("s3images.hrl").
 
--record(upload, {fd, filename, last}).
+-record(upload, {fd, filename, last, inhead, userdata = []}).
 
 out(Arg) ->
     Req = Arg#arg.req,
@@ -42,24 +42,41 @@ wrap_body(Outer, {Inner, Args}) ->
 handle_request('GET', "/", _Arg) ->
     make_response(200, wrap_body(default, {index, ok}));
 
+handle_request('GET', "/a/object:" ++ ObjectId, _Arg) ->
+    Records = s3images_image:find(object, [list_to_binary(ObjectId)]),
+    CleanRecords = [begin
+        Name = binary_to_list(Record#image.name),
+        Ext = filename:extension(Name),
+        Root = filename:rootname(Name),
+        {obj, [
+            {<<"id">>, list_to_binary(Root)},
+            {<<"url">>, list_to_binary(lists:concat(["http://", s3images:env_key(s3bucket), "/", Name]))},
+            {<<"thumbnail">>, list_to_binary(lists:concat(["http://", s3images:env_key(s3bucket), "/", Root, "_sq", Ext]))}
+        ]}
+    end || Record <- Records],
+    RespBody = rfc4627:encode(CleanRecords),
+    make_response(200, RespBody);
+
+handle_request('GET', "/a/", _Arg) ->
+    RespBody = wrap_body(default, {upload, ok}),
+    make_response(200, RespBody);
+
 handle_request('GET', "/upload", _Arg) ->
     RespBody = wrap_body(default, {upload, ok}),
     make_response(200, RespBody);
 
 handle_request('POST', "/upload", Arg) ->
     case multipart(Arg, #upload{}) of
-        {upload, _, Filename, _} ->
-            case verify_image(Filename) of 
+        Upload when is_record(Upload, upload) ->
+            case verify_image(Upload#upload.filename) of 
                 ok ->
-                    ImageData = image_detect:image_type([?DIR, Filename]),
-                    S3Filename = filename_with_ext(Filename, ImageData),
-                    file:rename([?DIR, Filename], [?DIR, S3Filename]),
-                    s3images_util:write_file(S3Filename, ImageData, s3images:env_key(s3bucket)),
-                    s3images_image:create(list_to_binary(S3Filename), <<"none">>, <<"none">>),
+                    UserData = collect_userdata(Upload#upload.userdata),
+                    S3Filename = process_image(Upload#upload.filename, UserData),
                     make_response(200, wrap_body(default, {upload, {ok, S3Filename}}));
                 _ -> make_response(200, wrap_body(default, {upload, error}))
             end;
-        _ -> make_response(200, wrap_body(default, {upload, error}))
+        _ ->
+            make_response(200, wrap_body(default, {upload, error}))
     end;
 
 handle_request(_, _, _Arg) ->
@@ -113,16 +130,26 @@ addFileChunk(A, [{head, {"file", Opts}}|Res], State ) ->
             Fname = s3images_util:guid(),
             case file:open([?DIR, Fname] ,[write]) of
                 {ok, Fd} ->
-                    addFileChunk(A, Res, State#upload{filename = Fname, fd = Fd});
+                    addFileChunk(A, Res, State#upload{filename = Fname, fd = Fd, inhead = "file"});
                 _ -> {done, State}
             end;
         false -> {done, error, State}
     end;
 
-addFileChunk(A, [{body, Data}|Res], State) when State#upload.filename /= undefined ->
+addFileChunk(A, [{body, Data}|Res], State) when State#upload.filename /= undefined, State#upload.inhead == "file" ->
+    io:format("Processing file body.~n"),
     case file:write(State#upload.fd, Data) of
-        ok -> addFileChunk(A, Res, State);
+        ok -> addFileChunk(A, Res, State#upload{ inhead = "none" });
         _ -> {done, State}
+    end;
+
+addFileChunk(A, [X | Tail], State) ->
+    io:format("Unknown chunk: ~p~n", [X]),
+    case X of
+        {head, {Name, _}} -> 
+            addFileChunk(A, Tail, State#upload{ userdata = [Name | State#upload.userdata ] });
+        {body, Data} ->
+            addFileChunk(A, Tail, State#upload{ userdata = [Data | State#upload.userdata ] })
     end.
 
 verify_image(Filename) ->
@@ -151,3 +178,35 @@ image_rules(Filename, [imagetest | Rules]) ->
 
 filename_with_ext(Filename, {ImageType, _, _}) ->
     lists:concat([filename:basename(Filename), ".", atom_to_list(ImageType)]).
+
+thumbnail_with_ext(Filename, {ImageType, _, _}) ->
+    lists:concat([filename:basename(Filename), "_sq.", atom_to_list(ImageType)]).
+
+process_image(Filename, UserData) ->
+    {ImageType, _, _} = image_detect:image_type([?DIR, Filename]),
+    S3Filename = filename_with_ext(Filename, {ImageType, 0, 0}),
+    file:rename([?DIR, Filename], [?DIR, S3Filename]),
+    s3images_util:write_file(S3Filename, {ImageType, 0, 0}, s3images:env_key(s3bucket)),
+    case s3images:env_key(create_sq) of
+        true ->
+            ThumbnailName = thumbnail_with_ext(Filename, {ImageType, 0, 0}),
+            ResizeCmd = lists:concat(["convert /tmp/", S3Filename," -resize 100x100 /tmp/", ThumbnailName]),
+            os:cmd(ResizeCmd),
+            s3images_util:write_file(ThumbnailName, {ImageType, 0, 0}, s3images:env_key(s3bucket));
+        _ -> ok
+    end,
+    s3images_image:create(list_to_binary(S3Filename), userdata_value(UserData, "object"), userdata_value(UserData, "owner")),
+    S3Filename.
+
+collect_userdata(Data) ->
+    collect_userdata(Data, []).
+
+collect_userdata([], Acc) -> Acc;
+collect_userdata([Value, Key | Tail], Acc) ->
+    collect_userdata(Tail, [{Key, Value} | Acc]).
+
+userdata_value(UserData, Key) ->
+    case lists:keysearch(Key, 1, UserData) of
+        {value, {Key, Value}} -> Value;
+        _ -> <<"none">>
+    end.
