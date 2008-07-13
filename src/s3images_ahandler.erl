@@ -76,6 +76,12 @@ handle_request('GET', "/a/owner:" ++ OwnerId, _Arg) ->
     RespBody = rfc4627:encode(CleanRecords),
     make_response(200, RespBody);
 
+handle_request('GET', "/a/object:" ++ ObjectId, _Arg) ->
+    Records = s3images_image:find(object, [list_to_binary(ObjectId)]),
+    CleanRecords = s3images_image:record_to_json(Records),
+    RespBody = rfc4627:encode(CleanRecords),
+    make_response(200, RespBody);
+
 handle_request('GET', "/a/", _Arg) ->
     RespBody = wrap_body(default, {upload, ok}),
     make_response(200, RespBody);
