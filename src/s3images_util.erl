@@ -22,7 +22,7 @@
 %% OTHER DEALINGS IN THE SOFTWARE.
 -module(s3images_util).
 
--export([write_file/3, guid/0]).
+-export([write_file/3, guid/0, s3now/0]).
 
 -include("s3images.hrl").
 
@@ -36,3 +36,6 @@ write_file(Filename, {ImageType, _, _}, Bucket) ->
 guid() ->
     <<I:160/integer>> = crypto:sha(term_to_binary({make_ref(), now()})),
     erlang:integer_to_list(I, 16).
+
+s3now() ->
+    calendar:datetime_to_gregorian_seconds(erlang:universaltime()).

@@ -24,12 +24,17 @@ create thumbnails.
 
 API
 
-* GET [HOST]/upload -- Returns HTML that is used to upload an image
+* GET [HOST]/ -- Returns introductory HTML.
+* GET [HOST]/upload -- Returns HTML that is used to upload an image.
 * POST [HOST]/upload -- Processes multi-part form data to upload image
   content to a temp directory, assert that it is valid, send it to the
   provided Amazon S3 bucket and create a mnesia record describing the image.
+* GET [HOST]/a/recent -- Returns a list of 25 of the most recent image
+  records created.
 * GET [HOST]/a/object:[NAME] -- Returns a list of image records that point
   to the object [NAME].
+* GET [HOST]/a/owner:[NAME] -- Returns a list of image records that point
+  to the owner [NAME].
 * GET [HOST]/i/[NAME] -- Requests image keyed [NAME]. If the image exists
   either the user will be redirected to it or a perlbal-friendly header will
   be passed back indicating an internal redirect needs to be processed.
@@ -92,6 +97,14 @@ CHANGES
  - Added the /a/object:XYZ123 URI to return a list of images where XYZ123 is
    an object id.
  - Added the rfc4627 library to support the above API method.
+ - Added the /a/recent url to return a list of the 25 most recently added
+   images.
+ - Added the 'delegate' config variable and demo module (s3images_demo.erl).
+ - Added more (and hopefully better) documentation.
+ - Updated the default HTML.
+ - Added a list of recently uploaded image thumbnails and links to the root
+   page.
+ - Bumped the project version to 0.2
 
 2008-07-09 ngerakines
  - Initial development
@@ -103,3 +116,7 @@ TODO / ROADMAP
    redirect. 
  * Improve the image record.
  * Add hooks to an auth handler to prevent anonymous uploads (s3 ain't cheap!).
+ * Document the delegate module and explain what does what and why.
+ * Provide alternative delegate modules.
+ * Add more documentation.
+ * Add a mochiweb handler, making the application not yaws-specific.

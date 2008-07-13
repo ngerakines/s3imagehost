@@ -34,7 +34,6 @@ out(Arg) ->
 handle_request('GET', "/i/" ++ File, _Arg) ->
     case s3images_image:find(name, [list_to_binary(File)]) of
         [Record] ->
-            %% fetch 'domain' variable
             Url = lists:concat(["http://", s3images:env_key(s3bucket), "/", binary_to_list(Record#image.name)]),
             case s3images:env_key(reproxy) of
                 true -> 

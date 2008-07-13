@@ -20,6 +20,22 @@
 %% WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 %% FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 %% OTHER DEALINGS IN THE SOFTWARE.
+
+%% @author Nick Gerakines <nick@gerakines.net>
+%% @copyright 2008 Nick Gerakines
+%% @todo Make this application mochiweb compatible.
+%% @doc `s3images` is the core application module for the s3images project.
+%% This application has 2 start phases that you should be aware of. The
+%% first is the "s3" phase. During the "s3" phase the application starts
+%% an s3 gen_server using the third-party s3 module. This process provides
+%% the core functionality of interacting with the Amazon S3 service.
+%% 
+%% The second start phase is the "mnesia" whereby the application creates
+%% the mnesia tables used by the application. Note that the scheme defs will
+%% already have been created by this point because mnesia is a required
+%% application via the s3images.app configuration file. Because of this, we
+%% change the table type of the schema table to a disc_copy if it is a ram
+%% copy.
 -module(s3images).
 -behaviour(application).
 

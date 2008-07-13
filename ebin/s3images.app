@@ -1,6 +1,6 @@
 {application, s3images, [
     {description, "A webservice for storing images on Amazon S3."},
-    {vsn, "0.1"},
+    {vsn, "0.2"},
     {modules, [
         s3images,
         s3images_ahandler,
@@ -18,10 +18,11 @@
       {port, 5056},
       {domain, "localhost"},
       {s3bucket, "media.s3images.com"},
-      {s3key, ""},
-      {s3secret, ""},
+      {s3key, "key123"},
+      {s3secret, "secretabc789"},
       {reproxy, true},
-      {create_sq, true}
+      {create_sq, true},
+      {delegate, s3images_demo}
     ]},
     {start_phases, [
       {mnesia, []},

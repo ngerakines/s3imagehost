@@ -1,50 +1,64 @@
 Nothing to see here ... Move along now.
 <%@ default(Data) %>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html lang="en">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
 <head>
-    <title>Page Layouts - Single column, centre aligned, set width</title>
-    <style type="text/css" media="screen">
-	<!--
-	body { padding: 0; margin: 0; background-color: #ffffff; color: #000;
-	    text-align: center; }
-    #contents { margin-top: 10px; margin-bottom: 10px; margin-right:auto;
-        margin-left:auto; width: 600px; padding: 10px; background-color: #FFF;
-        color: #000; text-align: left; }
-    h1 { color: #333; background-color: transparent;
-        font-family: Arial, Helvetica, sans-serif; font-size: 20px; }
-    p { color: #333; background-color: transparent;
-        font-family: Arial, Helvetica, sans-serif; font-size: 0.8em; }
-    .code { color: #339;background-color: transparent;
-        font-family: times, serif; font-size: 0.9em; padding-left: 40px; }
-    -->
-    </style>
+<title>S3 Image Host</title>
+<style type="text/css" media="screen">
+body{margin:0;padding:0;background-repeat:no-repeat;background-position:top right;background-color:#fff;color:#000;}
+#Header{margin:85px 100px 0;padding:0;}
+.Content{margin:0 100px 50px;padding:20px;color:#000;background-color:#eee;border:1px dashed #000;}
+p{font-size:11px;line-height:20px;font-family:verdana,arial,helvetica,sans-serif;margin:0 0 12px;}
+#Content>p{margin:0;}
+#Content>p+p{text-indent:30px;}
+a{color:#09C;font-size:11px;text-decoration:none;font-weight:600;font-family:verdana,arial,helvetica,sans-serif;}
+a:link{color:#09c;}a:visited{color:#07a;}
+a:hover{background-color:#fff;}
+h1{color:#333;font:24px/24px verdana,arial,helvetica,sans-serif;font-weight:900;}
+h2{color:#333;font:12px verdana,arial,helvetica,sans-serif;font-weight:700;margin:18px 0 3px;}
+h3{color:#666;font-size:11px;font-weight:800;margin:6px 0 3px;}
+img{border-width:0;}
+img.thumb{margin:10px 1px;}
+</style>
 </head>
 <body>
-    <div id="contents">
-        <% Data %>	
-    </div>
-    <p>Check out <a href="http://github.com/ngerakines/s3imagehost/">the source</a>.</p>
+<h1 id="Header">S3 Image Host</h1>
+<div class="Content">
+    <% Data %>
+    <hr />
+    <p>Don't forget to get <a href="http://github.com/ngerakines/s3imagehost/">the source code</a>.</p>
+</div>
 </body>
 </html>
-<%@ index(_) %>
-<h1>Welcome</h1>
-<p>This is the s3images project.</p>
+<%@ index({RecentImages}) %>
+<h2 class="first">The S3 Image Host</h2>
+<p>You've made it to the s3 image host. This is an open-source Erlang project
+    to demonstrate that how with a little understanding and know-how you can
+    create feature-complete, well-tested and scalable web applications and
+    services in Erlang.</p>
+<p>This such example application is an image/file store powered by the Amazon
+    S3 service. It accepts file uploads, applies a number of rules and
+    transformations on the POST data and stores the content and references
+    in an Amazon S3 bucket and in Mnesia.</p>
+<% display_images(RecentImages) %>
+<p>To add an image, go to <a href="/upload">/upload</a>.</p>
 <%@ upload(ok) %>
-<h1>Upload a file</h1>
-<p>Use this form to upload a file.</p>
+<h2 class="first">The S3 Image Host</h2>
+<p>Use this form to upload an image. You must know the right password
+    to post images. Images uploaded must also be under 5 megs in size and
+    less than 4096x4096 pixels in height and width. Oh, and the image must
+    be a valid jpeg, gif or png file.</p>
 <p>&nbsp;</p>
 <form enctype="multipart/form-data" method="post" action="/upload">
-    <input type="hidden" name="owner" value="ngerakines" />
-    <input type="hidden" name="object" value="blog_post_123456" />
-    <input type="file" width="50" name="file" />
+    <p>User: <input type="text" name="owner" value="" /></p>
+    <p>Password: <input type="password" name="password" value="" /></p>
+    <p><input type="file" width="50" name="file" /></p>
     <input type="submit" value="Upload" />
 </form>
-
-<%@ upload({ok, S3Filename})%>
-<h1>Success!</h1>
-<p>Image <a href="/i/<% S3Filename %>"><% S3Filename %></a> has been uploaded.</p>
-
 <%@ upload(error) %>
 <h1>Warning!</h1>
 <p>There was an error uploading the image.</p>
+<%@ display_images([]) %>
+<%@ display_images([Image | Images]) %>
+<a href="<% Image(url)%>"><img src="<% Image(thumbnail)%>" /></a>
+<% display_images(Images) %>
