@@ -48,8 +48,9 @@ out(Arg) ->
 %% @doc Provide a simple way to wrap request specific body inside of a
 %% larger document.
 wrap_body(Outer, {Inner, Args}) ->
-    InnerBody = apply(s3imagestmpl_ahandler, Inner, [Args]),
-    OuterBody = apply(s3imagestmpl_ahandler, Outer, [InnerBody]),
+    Tmpl = s3images:env_key(template, s3imagestmpl_ahandler),
+    InnerBody = apply(Tmpl, Inner, [Args]),
+    OuterBody = apply(Tmpl, Outer, [InnerBody]),
     iolist_to_binary(OuterBody).
 
 %% @spec handle_request(Request, Path, Arg) -> Response

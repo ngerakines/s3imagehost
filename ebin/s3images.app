@@ -22,7 +22,8 @@
       {s3secret, "secretabc789"},
       {reproxy, true},
       {create_sq, true},
-      {delegate, s3images_demo}
+      {delegate, s3images_demo},
+      {template, s3imagestmpl_ahandler}
     ]},
     {start_phases, [
       {mnesia, []},

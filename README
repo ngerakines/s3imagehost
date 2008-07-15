@@ -57,6 +57,11 @@ The following configuration variables must be set in the ebin/s3images.app:
 6. s3secret -- The secret token used in conjunction with the key.
 7. reproxy -- Set to 'true' to send the 'X-REPROXY-URL' header.
 8. create_sq -- Set to 'true' to create/upload 100x100 thumbnails
+9. delegate -- When this variable is set then the module this variable
+   points to is used for a number of delegated actions. Please refer to the
+   s3images_demo module for more information and documentation.
+10. template -- This variable points to a template module that is used in
+    place of the default s3imagestmpl_ahandler.et template.
 
 BUILDING
 
@@ -88,6 +93,9 @@ CAVEATS / NOTES / KNOWN ISSUES
    for being too big.
 
 CHANGES
+
+2008-07-14 ngerakines
+ - Added a config option to point to a different template delegate. 
 
 2008-07-12 ngerakines
  - Added a config option to direct the app to set the 'X-REPROXY-URL' header

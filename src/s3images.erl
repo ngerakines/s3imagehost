@@ -39,7 +39,8 @@
 -module(s3images).
 -behaviour(application).
 
--export([start/2, stop/1, start_phase/3, build_templates/0, env_key/1]).
+-export([start/2, stop/1, start_phase/3, build_templates/0]).
+-export([env_key/1, env_key/2]).
 
 -include("s3images.hrl").
 -include("s3.hrl").
@@ -76,5 +77,10 @@ build_templates() ->
     end || F <- filelib:wildcard("templates/*.et")].
 
 env_key(Key) ->
-    {ok, Val} = application:get_env(s3images, Key),
-    Val.
+    env_key(Key, <<"none">>).
+
+env_key(Key, Default) ->
+    case application:get_env(s3images, Key) of
+        {ok, Val} -> Val;
+        _ -> Default
+    end.
