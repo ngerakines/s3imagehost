@@ -29,7 +29,7 @@
 write_file(Filename, {ImageType, _, _}, Bucket) ->
     case file:read_file([?DIR, Filename]) of
         {ok, Data} ->
-            s3:write_object(Bucket, Filename, Data, image_detect:mime_type(ImageType));
+            catch s3:write_object(Bucket, Filename, Data, image_detect:mime_type(ImageType));
         _ -> error
     end.
 

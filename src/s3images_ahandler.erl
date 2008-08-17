@@ -95,10 +95,12 @@ handle_request('POST', "/upload", Arg) ->
     case multipart(Arg, #upload{}) of
         Upload when is_record(Upload, upload) ->
             UserData = collect_userdata(Upload#upload.userdata),
-            case verify_image(Upload#upload.filename, UserData) of 
+            try verify_image(Upload#upload.filename, UserData) of
                 ok ->
-                    process_image(Upload#upload.filename, UserData),
+                    catch process_image(Upload#upload.filename, UserData),
                     {redirect, "/"};
+                _ -> make_response(200, wrap_body(default, {upload, error}))
+            catch
                 _ -> make_response(200, wrap_body(default, {upload, error}))
             end;
         _ ->
