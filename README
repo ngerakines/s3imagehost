@@ -72,9 +72,9 @@ START-UP
 1. Update the ebin/s3images.app file and set the domain, amazon s3 access
    information and s3 bucket.
 2. Build the project (`make`)
-3. Start the erlang node (`./start.sh`)
-4. Start the application and its dependancies. 
-   `1> [application:start(X) || X <- [inets, yaws, crypto, mnesia, s3images]].`
+3. Start the erlang node and application with `make start`.
+
+Optional: Connect with a control erlang node via `make start-ctl`.
 
 ELIB
 
@@ -93,6 +93,10 @@ CAVEATS / NOTES / KNOWN ISSUES
    for being too big.
 
 CHANGES
+
+2008-08-17 ngerakines
+ - Sprinkled a few try/catch calls to catch app failures (yay fault-tolerance!)
+ - Added `make start` and `make start-ctl` Makefile commands.
 
 2008-07-14 ngerakines
  - Added a config option to point to a different template delegate. 

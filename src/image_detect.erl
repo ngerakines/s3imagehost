@@ -74,4 +74,3 @@ parse_jpeg(<<_,Rest/binary>>, Pos) -> parse_jpeg(Rest, Pos).
 mime_type(gif) -> "image/gif";
 mime_type(png) -> "image/png";
 mime_type(jpeg) -> "image/jpeg".
-

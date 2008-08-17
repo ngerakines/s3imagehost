@@ -22,7 +22,7 @@
 %% OTHER DEALINGS IN THE SOFTWARE.
 -module(s3images_util).
 
--export([write_file/3, guid/0, s3now/0]).
+-export([write_file/3, delete_file/2, guid/0, s3now/0]).
 
 -include("s3images.hrl").
 
@@ -31,6 +31,10 @@ write_file(Filename, {ImageType, _, _}, Bucket) ->
         {ok, Data} ->
             catch s3:write_object(Bucket, Filename, Data, image_detect:mime_type(ImageType));
         _ -> error
+    end.
+
+delete_file(Filename, Bucket) ->
+        catch s3:delete_object(Bucket, Filename);
     end.
 
 guid() ->
